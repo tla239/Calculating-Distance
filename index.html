@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>Lab 07 Update</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: maroon;
+            font-family: "Noto Sans", sans-serif;
+            color: #3d3d3d;
+        }
+
+        section {
+            width: 960px;
+            margin: 20px auto;
+        }
+
+        h1 {
+            width: 960px;
+            margin: 20px auto;
+            font-family: "Lora", serif;
+            letter-spacing: .04em;
+            color: white;
+        }
+
+        h2 {
+            font-family: "Lora", serif;
+            letter-spacing: .04em;
+            color: white;
+        }
+
+        p {
+            font-size: 1em;
+            line-height: 1.5em;
+            color: white;
+        }
+
+        a {
+            color: #005daa;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 10px 0
+        }
+
+        #map {
+            width: 960px;
+            height: 540px;
+            margin: 10px auto;
+            border: 2px solid #d3d3d3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Find Your Distance to the Red Iguana Restaurant!</h1>
+
+    <div id='map'></div>
+
+    <section>
+        <h2>Great Mexican Food!</h2>
+
+        <p>Map authored by Tara Lanzrath</p>
+
+        <p>While in Salt Lake City, check out a local favorite restaurant called the Red Iguana. Featured on Food Network's "Diners, Drive-ins and Dives, this restaurant is a must try when in the Salt Lake City, Utah area. Use the above map to calculate your distance to this restaurant. Additional information about the <a href="http://www.rediguana.com/">Red Iguana Restaurant</a> can be found here. </p>
+
+    </section>
+
+    <script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+    <script>
+        var options = {
+            center: [40.74, -110.61],
+            zoom: 6
+        }
+
+        var map = L.map('map', options);
+
+        var tiles = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+        map.addLayer(tiles);
+
+        var redIguana = L.latLng(40.7718, -111.9124);
+
+        L.marker(redIguana, {
+            icon: L.icon({
+                iconUrl: 'red_iguana.png',
+                iconSize: [40, 36]
+            })
+        }).addTo(map);
+
+        // add empty layerGroup to map
+        var markerGroup = L.layerGroup().addTo(map);
+
+        var newMarker; // global var for our marker
+
+        //once prevents more than one marker, but it also doesn't allow a new one to be generated
+        map.on('click', function (e) {
+
+            // if markersGroup has newMarker, remove it
+            if(markerGroup.hasLayer(newMarker)) {
+                markerGroup.clearLayers();
+            }
+
+            // store reference to distance between click and red iguana
+            var distance = e.latlng.distanceTo(redIguana)/1000;  //convert to km
+
+            // create a new marker at the click location
+            // and make it draggable
+            newMarker = L.marker(e.latlng, {
+                    draggable: true,
+                    opacity: .8
+                }).addTo(markerGroup) // add it to markerGroup, bind, and open popup
+                .bindPopup(Math.round(distance).toLocaleString() + " " + "km from Red Iguana").openPopup();
+
+            newMarker.on('dragend', function (e) {
+
+                // calc distance between this location and redIguana
+                var dragDistance = newMarker.getLatLng().distanceTo(redIguana)/1000;  //convert to km
+
+                // get the marker's popup and update/set the content
+                newMarker.getPopup().setContent(Math.round(dragDistance).toLocaleString() + " " + "km from Red Iguana").openOn(map);
+            });
+
+        });
+    </script>
+
+</body>
+
+</html>
